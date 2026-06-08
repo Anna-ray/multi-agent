@@ -3,6 +3,7 @@ from .base_agent import Agent
 from services.ai_ml_client import AiMlClient
 from messages.models import MessageEnvelope, DecisionRequest, DecisionMade
 
+
 class DecisionAgent(Agent):
     """Synthesizes analysis into executive-level recommendations using AI/ML APIs.
 
@@ -32,7 +33,9 @@ class DecisionAgent(Agent):
             # Validate decision request payload
             DecisionRequest.model_validate(payload)
             # Synthesize recommendation
-            recommendation = self.ai.synthesize_recommendation(esc_id, context, analyses)
+            recommendation = self.ai.synthesize_recommendation(
+                esc_id, context, analyses
+            )
 
             # Ensure recommendation conforms to model shape
             DecisionMade.model_validate(recommendation)

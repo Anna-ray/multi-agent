@@ -3,6 +3,7 @@ from .base_agent import Agent
 import json
 from messages.models import MessageEnvelope
 
+
 class AuditAgent(Agent):
     """Listens to Band messages and records them for traceability.
 

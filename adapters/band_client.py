@@ -2,6 +2,7 @@ import threading
 from typing import Callable, Dict, Any
 from messages.models import MessageEnvelope, TOPIC_PAYLOAD_MODELS
 
+
 class BandClient:
     """Abstract Band client interface. Implement publish/subscribe in production.
 
@@ -36,12 +37,22 @@ class InMemoryBandClient(BandClient):
             envelope_obj = message
         else:
             # Ensure message contains payload dict
-            envelope_payload = message.get("payload") if isinstance(message, dict) else None
+            envelope_payload = (
+                message.get("payload") if isinstance(message, dict) else None
+            )
             # Compose an envelope dict
             env = {
-                "source": message.get("source", "unknown") if isinstance(message, dict) else "unknown",
+                "source": (
+                    message.get("source", "unknown")
+                    if isinstance(message, dict)
+                    else "unknown"
+                ),
                 "topic": topic,
-                "payload": envelope_payload if envelope_payload is not None else (message if isinstance(message, dict) else {}),
+                "payload": (
+                    envelope_payload
+                    if envelope_payload is not None
+                    else (message if isinstance(message, dict) else {})
+                ),
             }
             # Validate against MessageEnvelope model
             envelope_obj = MessageEnvelope.model_validate(env)
@@ -53,7 +64,9 @@ class InMemoryBandClient(BandClient):
                 payload_model.model_validate(envelope_obj.payload)
             except Exception as e:
                 # For safety, do not deliver invalid messages. Raise to surface errors during development.
-                raise ValueError(f"Payload validation failed for topic '{topic}': {e}") from e
+                raise ValueError(
+                    f"Payload validation failed for topic '{topic}': {e}"
+                ) from e
 
         # Deliver to subscribers
         handlers = []

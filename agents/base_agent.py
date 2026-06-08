@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Any
 from messages.models import MessageEnvelope
 
+
 class Agent(ABC):
     """Base class for all agents. Agents interact via a BandClient passed on construction.
 

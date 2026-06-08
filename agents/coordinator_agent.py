@@ -2,6 +2,7 @@ from typing import Dict, Any
 from .base_agent import Agent
 from messages.models import MessageEnvelope, EscalationTask
 
+
 class CoordinatorAgent(Agent):
     """Listens for escalations and coordinates specialist tasks.
 
@@ -16,7 +17,11 @@ class CoordinatorAgent(Agent):
     def handle_message(self, message: MessageEnvelope):
         payload = message.payload
         escalation_id = payload.get("escalation_id")
-        urgency_level = payload.get("urgency", {}).get("level", "low") if payload.get("urgency") else "low"
+        urgency_level = (
+            payload.get("urgency", {}).get("level", "low")
+            if payload.get("urgency")
+            else "low"
+        )
 
         # Mobilize teams: choose number of specialists or priority path
         task_payload = {

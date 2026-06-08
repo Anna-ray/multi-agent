@@ -3,6 +3,7 @@ from .base_agent import Agent
 from services.ai_ml_client import AiMlClient
 from messages.models import MessageEnvelope, AnalysisCompleted
 
+
 class SpecialistAgent(Agent):
     """Analyzes escalations and collects evidence.
 
@@ -24,7 +25,9 @@ class SpecialistAgent(Agent):
         }
         # If AI client is available, run a deep analysis
         if self.ai:
-            prompt = f"Analyze escalation {escalation_id}: {context.get('content','')[:500]}"
+            prompt = (
+                f"Analyze escalation {escalation_id}: {context.get('content','')[:500]}"
+            )
             ai_analysis = self.ai.analyze(prompt)
             summary["ai_analysis"] = ai_analysis
 

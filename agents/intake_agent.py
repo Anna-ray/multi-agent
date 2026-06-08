@@ -3,6 +3,8 @@ from typing import Dict, Any
 from .base_agent import Agent
 from services.featherless_client import FeatherlessClient
 from messages.models import EscalationCreated
+from messages.models import MessageEnvelope
+
 
 class IntakeAgent(Agent):
     """Detects incoming escalations and classifies urgency using Featherless.

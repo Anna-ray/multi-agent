@@ -4,6 +4,7 @@ from typing import Any, Dict, Optional, Literal
 from pydantic import BaseModel, Field
 import uuid
 
+
 # Core envelope model used at the Band boundary
 class MessageEnvelope(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
