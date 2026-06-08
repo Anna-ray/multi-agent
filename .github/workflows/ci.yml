@@ -1,9 +1,13 @@
 name: CI Pipeline
 
 on:
+  push:
+    branches: [ main ]
   pull_request:
     branches: [ main ]
 
+jobs:
+# ... rest of your file remains exactly the same
 jobs:
   test-and-lint:
     runs-on: ubuntu-latest
