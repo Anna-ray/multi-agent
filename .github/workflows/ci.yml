@@ -1,0 +1,34 @@
+name: CI Pipeline
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test-and-lint:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11' # Stable version for running ecosystem tools cleanly
+
+    - name: Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        # Strip python constraint if present during CI run to avoid pip engine halts
+        sed -i '/python>=/d' requirements.txt || true
+        pip install -r requirements.txt
+
+    - name: Run Style Checker (flake8)
+      run: |
+        flake8 agents/ messages/ adapters/ --count --select=E9,F63,F7,F82 --show-source --statistics
+        flake8 agents/ messages/ adapters/ --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+    - name: Run Contract Validation Tests
+      run: |
+        python -m pytest tests/test_message_validation.py -v
