@@ -1,3 +1,4 @@
 requests
 pydantic
 flake8
+pytest
