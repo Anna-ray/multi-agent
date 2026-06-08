@@ -2,45 +2,28 @@
 
 This repository contains a scaffold for a customer support escalation orchestration system. It provides five agent classes implemented in Python that coordinate via a Band messaging hub. The design focuses on modularity, traceability, and integration with classification (Featherless) and AI/ML decision services.
 
-Overview
+IMPORTANT: Message contract layer
 
-- Intake Agent: Detects and ingests escalation signals from external sources (tickets, emails, logs) and classifies urgency using Featherless.
-- Coordinator Agent: Receives escalations and mobilizes Specialist Agents and Decision Agent workflows.
-- Specialist Agent: Performs deep analysis on escalations to identify root causes and gathers evidence.
-- Decision Agent: Synthesizes findings and produces executive-level recommendations using an AI/ML API.
-- Audit Agent: Records all actions, messages, and decisions to ensure traceability and compliance.
+This update adds a strict message contract layer using Pydantic models. Every message published to the Band is validated at the bus boundary. The models live in `messages/models.py` and include:
 
-Structure
+- MessageEnvelope: the canonical envelope with id, timestamp, source, topic, and payload.
+- Typed payload models for: EscalationCreated, EscalationTask, AnalysisCompleted, DecisionRequest, DecisionMade.
 
-- agents/: Core agent implementations.
-- adapters/: Integration adapters, including Band client (operational hub). For demo, an in-memory Band simulator is provided.
-- services/: Wrappers for external services (Featherless classifier and AI/ML synthesizer).
-- examples/: Example runner that demonstrates the multi-agent pipeline in a single process using threads and the in-memory Band adapter.
+The in-memory Band client (`adapters/band_client.py`) enforces these contracts in development: it validates the envelope shape and the payload schema for each registered topic before delivering messages to subscribers.
 
-Getting Started
+Why this matters
 
-1. Clone the repository.
-2. Create a virtual environment and install dependencies from requirements.txt.
-3. Provide API keys via environment variables:
-   - FEATHERLESS_API_KEY
-   - AI_ML_API_KEY
+Strongly-typed message contracts prevent schema drift, make audit logs reliable, and make agent interactions deterministic. Implementing contracts first establishes a stable foundation for further work (CI, production Band adapter, observability).
 
 Running the demo
 
-- Run `python examples/run_pipeline.py` to start an in-process simulation with all agents using the in-memory Band adapter. This is intended for local testing and demonstration.
+1. Install requirements: `pip install -r requirements.txt`
+2. Run: `python examples/run_pipeline.py`
+3. Check `audit.log` for recorded, validated messages.
 
-Band Integration
+Next recommended steps
 
-- The adapters/band_client.py defines an interface `BandClient` used by all agents. Swap the in-memory `InMemoryBandClient` with a production Band adapter (HTTP/websocket) as needed.
+1. Add more domain models and tighten payload fields (replace Dict[str, Any] with explicit shapes where possible).
+2. Add unit tests that intentionally send invalid envelopes to confirm the Band client rejects them.
+3. Add CI to run tests and linting on PRs.
 
-Featherless and AI/ML
-
-- services/featherless_client.py and services/ai_ml_client.py include simple wrappers and placeholder implementations. Replace placeholders with real API endpoints per your organization's integrations.
-
-Audit and Traceability
-
-- agents/audit_agent.py listens to Band messages and writes trace records to a JSONL log file (`audit.log`) in the repository root for long-term auditing. Adapt it to push to your logging/observability stack.
-
-Contributing
-
-This scaffold is intended as a starting point. Add tests, CI/CD, production Band adapter, secure secret management, and robust error handling before deploying to production.

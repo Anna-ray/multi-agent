@@ -1,6 +1,7 @@
 from typing import Dict, Any
 from .base_agent import Agent
 from services.ai_ml_client import AiMlClient
+from messages.models import MessageEnvelope, AnalysisCompleted
 
 class SpecialistAgent(Agent):
     """Analyzes escalations and collects evidence.
@@ -27,10 +28,12 @@ class SpecialistAgent(Agent):
             ai_analysis = self.ai.analyze(prompt)
             summary["ai_analysis"] = ai_analysis
 
+        # Validate analysis payload
+        AnalysisCompleted.model_validate(summary)
         self.send_message("analysis.completed", summary)
         return summary
 
-    def handle_message(self, message: Dict[str, Any]):
-        payload = message.get("payload", {})
+    def handle_message(self, message: MessageEnvelope):
+        payload = message.payload
         if payload.get("action") == "analyze_root_cause":
             self.analyze(payload.get("escalation_id"), payload)

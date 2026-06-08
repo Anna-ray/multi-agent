@@ -1,5 +1,6 @@
 from typing import Dict, Any
 from .base_agent import Agent
+from messages.models import MessageEnvelope, EscalationTask
 
 class CoordinatorAgent(Agent):
     """Listens for escalations and coordinates specialist tasks.
@@ -12,20 +13,21 @@ class CoordinatorAgent(Agent):
     def __init__(self, name: str, band_client):
         super().__init__(name, band_client)
 
-    def handle_message(self, message: Dict[str, Any]):
-        payload = message.get("payload", {})
+    def handle_message(self, message: MessageEnvelope):
+        payload = message.payload
         escalation_id = payload.get("escalation_id")
-        urgency = payload.get("urgency", {}).get("level", "low") if payload.get("urgency") else "low"
+        urgency_level = payload.get("urgency", {}).get("level", "low") if payload.get("urgency") else "low"
 
         # Mobilize teams: choose number of specialists or priority path
-        task = {
+        task_payload = {
             "escalation_id": escalation_id,
             "action": "analyze_root_cause",
             "assigned_to": "specialist_pool",
-            "urgency": urgency,
+            "urgency": urgency_level,
         }
-        # Log coordination intent
-        self.send_message("escalation.task", task)
+        # Validate task payload
+        EscalationTask.model_validate(task_payload)
+        self.send_message("escalation.task", task_payload)
 
         # Request decision synthesis in parallel
         decision_request = {
